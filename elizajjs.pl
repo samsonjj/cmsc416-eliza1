@@ -8,6 +8,8 @@
 # they are communicating with a human
 
 use feature qw(say);
+use strict;
+use warnings;
 
 sub eliza_talk {
     say "ELIZA: ".$_[0];
@@ -15,7 +17,7 @@ sub eliza_talk {
 
 sub eliza_listen {
     print "YOU:   ";
-    $response = <STDIN>;
+    my $response = <STDIN>;
     chomp $response;
     return $response;
 }
@@ -36,13 +38,22 @@ sub say_hello {
     eliza_talk "Is something troubling you ?";
 }
 
+sub tokenify {
+    (my $sentence) = @_;
+    $sentence =~ s/[^a-zA-Z]]*/ /g ;
+    $sentence = lc($sentence);
+
+    my @tokens = split(/\s+/, $sentence);
+    return @tokens;
+}
+
 sub sentificate {
 
-    $sentence = $_[0];
+    my $sentence = $_[0];
     chomp $sentence;
-    ucfirst $sentence;
+    $sentence = ucfirst($sentence);
     
-    $last = substr($sentence, -1);
+    my $last = substr($sentence, -1);
     if ($last ne "." and $last ne "?") {
         $sentence .= ".";
     }
@@ -55,7 +66,8 @@ sub sentificate {
 say_hello();
 
 while(1) {
-    $response = eliza_listen();
-    $response = sentificate $response;
-    eliza_talk($response);
+    my $response = eliza_listen();
+    my @tokens = tokenify($response);
+    my $message = join("~", @tokens);
+    eliza_talk($message);
 }
