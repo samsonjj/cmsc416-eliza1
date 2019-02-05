@@ -18,6 +18,29 @@ Or, if the user's argument is giberish, Eliz will reply
 appropriately. 
 
 
+Here are some example conversations
+
+ELIZA: Hi, I'm a psychotherapist. What is your name?
+User: Jonathan
+ELIZA: Nice to meet you, Jonathan. Is something troubling you?
+Jonathan: I am feeling depressed.
+ELIZA: Why are you feeling depressed?
+Jonathan: I don't know.
+ELIZA: Why don't you know?
+Jonathan: You are pretty rude.
+ELIZA: Would you prefer if I were not pretty rude?
+
+
+ELIZA: Hi, I'm a psychotherapist. What is your name?
+User: Samson
+ELIZA: Nice to meet you, Samson. Is something troubling you?
+Samson: I have a confession.
+ELIZA: Tell me, I am a good listener.
+Samson: I am in trouble.
+ELIZA: Why are you in trouble?
+Samson: I stole from the mob.
+ELIZA: How does it make you feel when you steal?
+
 =end comment
 =cut
 
@@ -67,16 +90,24 @@ sub random_option {
     return $option;
 }
 
+# If the user types one of these words, exit
 my $exitWords = "bye|goodbye|quit|exit";
 
-my $does_pronouns = "he|she";
-my $do_pronouns = "I|you|they|we";
-
+# General rules to follow, new rules can easily be added
+# Rules are stored in a hash
+# If the key is matched within the input, it is substituted for one of the values at random
+# Only 1 substitution can happen per user input
+# This occurs in the while loop below
 my %substitution_rules = (
+    # We start out with the most specific lines, match specific rules first, general ones later
+    
+    # This one is special, If the user enters only whitespace, respond asking the user to talk
     "^[\\s.]*\$"                 =>  [   '"I can\'t help you if you don\'t talk to me."'],
-    "(Hi|Hello)[!.]?"                   =>  [   '"Hello!"', '"Hi!"', '"What is troubling you?"'],
+    # Hello
+    "^(Hi|Hello)[!.]?.*"                   =>  [   '"Hello!"', '"Hi!"', '"What is troubling you?"'],
     ".*I am tired.*"            =>  [   '"Do you think you should sleep more?"',
                                         '"Perhaps you should rest."'],
+    ".*I am feeling ([^.,?]*).*"  =>  [   '"Why are you feeling $1?"'],
     ".*Are you ([^?]*)//??.*"   =>  [   '"Would you prefer if I were not $1?"'],
     ".*My name is ([^.,]*).*"   =>  [   '"Hi $1, is something troubling you ?"',
                                         '"Oh my name is Eliza. Nice to meet you, $1. What\'s troubling you today?"',
@@ -90,6 +121,11 @@ my %substitution_rules = (
     ".*You do not .*"           =>  [   '"Would you prefer if I were not $1?"'],
     ".*I (need|want) to ([^.,?]*).*"   =>  [   '"What would you do if you did $2?"',
                                                 '"Why do you $1 to $2?"'],
+    # This is the one from the project description
+    ".*\bcrave\b.*"             => [    '"Tell me more about these cravings."'],
+    # Troubled people will often have confessions
+    ".*(confession|confess).*"  =>  [   '"Tell me, I am a good listener."'],
+    ".*\b([^.,?]*)\b is ([^.,?]*.*)"  =>  [   '"How do you know $1 is $2?"']
     
 );
 
@@ -100,7 +136,7 @@ my $verbs = [["be"],["have"],["do","does","doing","did","done"],["would"],["will
 ["spoil","spoils","spoiling","spoiled","spoiled"],["line","lines","lining","lined","lined"],["bless","blesses","blessing","blest","blest"],["ascertain","ascertains","ascertaining","ascertained","ascertained"],["penetrate","penetrates","penetrating","penetrated","penetrated"],["multiply","multiplies","multiplying","multiplied","multiplied"],["merge","merges","merging","merged","merged"],["coach","coaches","coaching","coached","coached"],["drain","drains","draining","drained","drained"],["suffice","suffices","sufficing","sufficed","sufficed"],["presume","presumes","presuming","presumed","presumed"],["fish","fishes","fishing","fished","fished"],["shop","shops","shopping","shopped","shopped"],["race","races","racing","raced","raced"],["honour","honours","honouring","honoured","honoured"],["freeze","freezes","freezing","froze","frozen"],["cure","cures","curing","cured","cured"],["revive","revives","reviving","revived","revived"],["swap","swaps","swapping","swapped","swapped"],["endure","endures","enduring","endured","endured"],["chase","chases","chasing","chased","chased"],["consume","consumes","consuming","consumed","consumed"],["insert","inserts","inserting","inserted","inserted"],["anger","angers","angering","angered","angered"],["await","awaits","awaiting","awaited","awaited"],["minister","ministers","ministering","ministered","ministered"],["drift","drifts","drifting","drifted","drifted"],["substitute","substitutes","substituting","substituted","substituted"],["stem","stems","stemming","stemmed","stemmed"],["surrender","surrenders","surrendering","surrendered","surrendered"],["wind","winds","winding","winded","winded"],["contract","contracts","contracting","contracted","contracted"],["machine","machines","machining","machined","machined"],["differentiate","differentiates","differentiating","differentiated","differentiated"],["advertise","advertises","advertising","advertised","advertised"],["reconcile","reconciles","reconciling","reconciled","reconciled"],["project","projects","projecting","projected","projected"],["co-ordinate","co-ordinates","co-ordinating","co-ordinated","co-ordinated"],["snap","snaps","snapping","snapped","snapped"],["damn","damns","damning","damned","damned"],["bake","bakes","baking","baked","baked"],["top","tops","topping","topped","topped"],["fold","folds","folding","folded","folded"],["concede","concedes","conceding","conceded","conceded"],["renew","renews","renewing","renewed","renewed"],["formulate","formulates","formulating","formulated","formulated"],["confuse","confuses","confusing","confused","confused"],["maximise"],["sweep","sweeps","sweeping","swept","swept"],["cheer","cheers","cheering","cheered","cheered"],["steer","steers","steering","steered","steered"],["base","bases","basing","based","based"],["cf."],["indulge","indulges","indulging","indulged","indulged"],["decrease","decreases","decreasing","decreased","decreased"],["reserve","reserves","reserving","reserved","reserved"],["host","hosts","hosting","hosted","hosted"],["evolve","evolves","evolving","evolved","evolved"],["foster","fosters","fostering","fostered","fostered"],["discourage","discourages","discouraging","discouraged","discouraged"],["curb","curbs","curbing","curbed","curbed"],["allocate","allocates","allocating","allocated","allocated"],["supervise","supervises","supervising","supervised","supervised"],["fade","fades","fading","faded","faded"],["endorse","endorses","endorsing","endorsed","endorsed"],["condemn","condemns","condemning","condemned","condemned"],["book","books","booking","booked","booked"],["tip","tips","tipping","tipped","tipped"],["reform","reforms","reforming","reformed","reformed"],["complement","complements","complementing","complemented","complemented"],["punish","punishes","punishing","punished","punished"],["bang","bangs","banging","banged","banged"],["outline","outlines","outlining","outlined","outlined"],["diminish","diminishes","diminishing","diminished","diminished"],["prevail","prevails","prevailing","prevailed","prevailed"],["leap","leaps","leaping","leaped","leaped"],["wrap","wraps","wrapping","wrapped","wrapped"],["compromise","compromises","compromising","compromised","compromised"],["collapse","collapses","collapsing","collapsed","collapsed"],["safeguard","safeguards","safeguarding","safeguarded","safeguarded"],["inhibit","inhibits","inhibiting","inhibited","inhibited"],["scream","screams","screaming","screamed","screamed"],["date","dates","dating","dated","dated"],["delete","deletes","deleting","deleted","deleted"],["attain","attains","attaining","attained","attained"],["dislike","dislikes","disliking","disliked","disliked"],["conceive","conceives","conceiving","conceived","conceived"],["shine","shines","shining","shone","shone"],["dictate","dictates","dictating","dictated","dictated"],["unite","unites","uniting","united","united"],["import","imports","importing","imported","imported"],["spring","springs","springing","sprang","sprung"],["rebuild","rebuilds","rebuilding","rebuilt","rebuilt"],["flourish","flourishes","flourishing","flourished","flourished"],["criticise","criticises","criticising","criticised","criticised"],["boil","boils","boiling","boiled","boiled"],["flee","flees","fleeing","fled","fled"],["commence","commences","commencing","commenced","commenced"],["praise","praises","praising","praised","praised"],["draft","drafts","drafting","drafted","drafted"],["park","parks","parking","parked","parked"],["discriminate","discriminates","discriminating","discriminated","discriminated"],["track","tracks","tracking","tracked","tracked"],["enclose","encloses","enclosing","enclosed","enclosed"],["interview","interviews","interviewing","interviewed","interviewed"],["tighten","tightens","tightening","tightened","tightened"],["price","prices","pricing","priced","priced"],["colour","colours","colouring","coloured","coloured"],["venture","ventures","venturing","ventured","ventured"],["speculate","speculates","speculating","speculated","speculated"],["depart","departs","departing","departed","departed"],["bury","buries","burying","buried","buried"],["interrupt","interrupts","interrupting","interrupted","interrupted"],["disguise","disguises","disguising","disguised","disguised"],["elect","elects","electing","elected","elected"],["withstand","withstands","withstanding","withstood","withstood"],["discharge","discharges","discharging","discharged","discharged"],["restrain","restrains","restraining","restrained","restrained"],["thrive","thrives","thriving","throve","thriven"],["echo","echoes","echoing","echoed","echoed"],["divert","diverts","diverting","diverted","diverted"],["fry","fries","frying","fried","fried"],["dissolve","dissolves","dissolving","dissolved","dissolved"],["edit","edits","editing","edited","edited"],["assemble","assembles","assembling","assembled","assembled"],["ruin","ruins","ruining","ruined","ruined"],["accelerate","accelerates","accelerating","accelerated","accelerated"],["envisage","envisages","envisaging","envisaged","envisaged"],["congratulate","congratulates","congratulating","congratulated","congratulated"],["retrieve","retrieves","retrieving","retrieved","retrieved"],["descend","descends","descending","descended","descended"],["suspend","suspends","suspending","suspended","suspended"],["experiment","experiments","experimenting","experimented","experimented"],["ship","ships","shipping","shipped","shipped"],["frighten","frightens","frightening","frightened","frightened"],["fool","fools","fooling","fooled","fooled"],["'ave","'as","'avin'","'ad","'ad"],["inspire","inspires","inspiring","inspired","inspired"],["heal","heals","healing","hole","holen"],["master","masters","mastering","mastered","mastered"],["terminate","terminates","terminating","terminated","terminated"],["amend","amends","amending","amended","amended"],["scratch","scratches","scratching","scratched","scratched"],["embark","embarks","embarking","embarked","embarked"],["entail","entails","entailing","entailed","entailed"],["execute","executes","executing","executed","executed"],["consolidate","consolidates","consolidating","consolidated","consolidated"],["cash","cashes","cashing","cashed","cashed"],["round","rounds","rounding","rounded","rounded"],["isolate","isolates","isolating","isolated","isolated"],["warrant","warrants","warranting","warranted","warranted"],["signal","signals","signalling","signalled","signalled"],["weaken","weakens","weakening","weakened","weakened"],["pin","pins","pinning","pinned","pinned"],["march","marches","marching","marched","marched"],["desire","desires","desiring","desired","desired"],["widen","widens","widening","widened","widened"],["level","levels","leveling","leveled","leveled"],["chat","chats","chatting","chatted","chatted"],["board","boards","boarding","boarded","boarded"],["contend","contends","contending","contended","contended"],["invent","invents","inventing","invented","invented"],["resource","resources","resourcing","resourced","resourced"],["manufacture","manufactures","manufacturing","manufactured","manufactured"],["seal","seals","sealing","sealed","sealed"],["reconsider","reconsiders","reconsidering","reconsidered","reconsidered"],["suck","sucks","sucking","sucked","sucked"],["picture","pictures","picturing","pictured","pictured"],["crash","crashes","crashing","crashed","crashed"],["transport","transports","transporting","transported","transported"],["plug","plugs","plugging","plugged","plugged"],["assign","assigns","assigning","assigned","assigned"],["enquire","enquires","enquiring","enquired","enquired"],["campaign","campaigns","campaigning","campaigned","campaigned"],["trap","traps","trapping","trapped","trapped"],["surround","surrounds","surrounding","surrounded","surrounded"],["debate","debates","debating","debated","debated"],["upgrade","upgrades","upgrading","upgraded","upgraded"],["decorate","decorates","decorating","decorated","decorated"],["confer","confers","conferring","conferred","conferred"],
 ["accumulate","accumulates","accumulating","accumulated","accumulated"],["profit","profits","profiting","profited","profited"],["file","files","filing","filed","filed"],["inherit","inherits","inheriting","inherited","inherited"],["disrupt","disrupts","disrupting","disrupted","disrupted"],["contrast","contrasts","contrasting","contrasted","contrasted"],["chuck","chucks","chucking","chucked","chucked"],["tick","ticks","ticking","ticked","ticked"],["plead","pleads","pleading","pleaded","pleaded"],["dip","dips","dipping","dipped","dipped"],["subscribe","subscribes","subscribing","subscribed","subscribed"],["educate","educates","educating","educated","educated"],["divorce","divorces","divorcing","divorced","divorced"],["spin","spins","spinning","spun","spun"],["row","rows","rowing","rowed","rowed"],["obscure","obscures","obscuring","obscured","obscured"],["creep","creeps","creeping","crept","crept"],["interest","interests","interesting","interested","interested"],["overlook","overlooks","overlooking","overlooked","overlooked"],["twist","twists","twisting","twisted","twisted"],["mature","matures","maturing","matured","matured"],["blend","blends","blending","blended","blended"],["revise","revises","revising","revised","revised"],["attribute","attributes","attributing","attributed","attributed"],["explode","explodes","exploding","exploded","exploded"],["dwell","dwells","dwelling","dwelt","dwelt"],["drown","drowns","drowning","drowned","drowned"],["alleviate","alleviates","alleviating","alleviated","alleviated"],["strip","strips","stripping","stripped","stripped"],["grade","grades","grading","graded","graded"],["revert","reverts","reverting","reverted","reverted"],["value","values","valuing","valued","valued"],["award","awards","awarding","awarded","awarded"],["strive","strives","striving","strove","striven"],["notify","notifies","notifying","notified","notified"],["remedy","remedies","remedying","remedied","remedied"],["accuse","accuses","accusing","accused","accused"],["instruct","instructs","instructing","instructed","instructed"],["spill","spills","spilling","spilled","spilled"],["strain","strains","straining","strained","strained"],["comprehend","comprehends","comprehending","comprehended","comprehended"],["soften","softens","softening","softened","softened"],["postpone","postpones","postponing","postponed","postponed"],["wave","waves","waving","waved","waved"],["bounce","bounces","bouncing","bounced","bounced"],["stock","stocks","stocking","stocked","stocked"],["position","positions","positioning","positioned","positioned"],["insure"],["adhere","adheres","adhering","adhered","adhered"],["cling","clings","clinging","clung","clung"],["summon","summons","summoning","summoned","summoned"],["pause","pauses","pausing","paused","paused"],["empty","empties","emptying","emptied","emptied"],["classify","classifies","classifying","classified","classified"]];
 
-
+my @adverbs = ("so", "abnormally","absentmindedly","accidentally","actually","adventurously","afterwards","almost","always","annually","anxiously","arrogantly","awkwardly","bashfully","beautifully","bitterly","bleakly","blindly","blissfully","boastfully","boldly","bravely","briefly","brightly","briskly","broadly","busily","calmly","carefully","carelessly","cautiously","certainly","cheerfully","clearly","cleverly","closely","coaxingly","colorfully","commonly","continually","coolly","correctly","courageously","crossly","cruelly","curiously","daily","daintily","dearly","deceivingly","deeply","defiantly","deliberately","delightfully","diligently","dimly","doubtfully","dreamily","easily","elegantly","energetically","enormously","enthusiastically","equally","especially","even","evenly","eventually","exactly","excitedly","extremely","fairly","faithfully","famously","far","fast","fatally","ferociously","fervently","fiercely","fondly","foolishly","fortunately","frankly","frantically","freely","frenetically","frightfully","fully","furiously","generally","generously","gently","gladly","gleefully","gracefully","gratefully","greatly","greedily","happily","hastily","healthily","heavily","helpfully","helplessly","highly","honestly","hopelessly","hourly","hungrily","immediately","innocently","inquisitively","instantly","intensely","intently","interestingly","inwardly","irritably","jaggedly","jealously","jovially","joyfully","joyously","jubilantly","judgmentally","justly","keenly","kiddingly","kindheartedly","kindly","knavishly","knowingly","knowledgeably","kookily","lazily","les","lightly","likely","limply","lively","loftily","longingly","loosely","loudly","lovingly","loyally","madly","majestically","meaningfully","mechanically","merrily","miserably","mockingly","monthly","more","mortally","mostly","mysteriously","naturally","hopelessly","hourly","hungrily","immediately","innocently","inquisitively","instantly","intensely","intently","interestingly","inwardly","irritably","jaggedly","jealously","jovially","joyfully","joyously","jubilantly","judgmentally","justly","keenly","kiddingly","kindheartedly","kindly","knavishly","knowingly","knowledgeably","kookily","lazily","less","lightly","likely","limply","lively","loftily","longingly","loosely","loudly","lovingly","loyally","madly","majestically","meaningfully","mechanically","merrily","miserably","mockingly","monthly","more","mortally","mostly","mysteriously","naturally","nearly","neatly","nervously","never","nicely","noisily","not","obediently","obnoxiously","oddly","offensively","officially","often","only","openly","optimistically","overconfidently","painfully","partially","patiently","perfectly","physically","playfully","politely","poorly","positively","potentially","powerfully","promptly","properly","punctually","quaintly","queasily","queerly","questionably","quicker","quickly","quietly","quirkily","quizzically","randomly","rapidly","rarely","readily","really","reassuringly","recklessly","regularly","reluctantly","repeatedly","reproachfully","restfully","righteously","rightfully","rigidly","roughly","rudely","safely","scarcely","scarily","searchingly","sedately","seemingly","seldom","selfishly","separately","seriously","shakily","sharply","sheepishly","shrilly","shyly","silently","sleepily","slowly","smoothly","softly","solemnly","solidly","sometimes","soon","speedily","stealthily","sternly","strictly","successfully","suddenly","supposedly","surprisingly","suspiciously","sweetly","swiftly","sympathetically","tenderly","tensely","terribly","thankfully","thoroughly","thoughtfully","tightly","tomorrow","too","tremendously","triumphantly","truly","truthfully","rightfully","scarcely","searchingly","sedately","seemingly","selfishly","separately","seriously","sheepishly","smoothly","solemnly","sometimes","speedily","stealthily","successfully","suddenly","supposedly","surprisingly","suspiciously","sympathetically","tenderly","thankfully","thoroughly","thoughtfully","tomorrow","tremendously","triumphantly","truthfully","ultimately","unabashedly","unaccountably","unbearably","unethically","unexpectedly","unfortunately","unimpressively","unnaturally","unnecessarily","upbeat","upright","upside-down","upward","urgently","usefully","uselessly","usually","utterly","vacantly","vaguely","vainly","valiantly","vastly","verbally","very","viciously","victoriously","violently","vivaciously","voluntarily","warmly","weakly","wearily","well","wetly","wholly","wildly","willfully","wisely","woefully","wonderfully","worriedly","wrongly","yawningly","yearly","yearningly","yesterday","yieldingly","youthfully","zealously","zestfully","zestily");
 
 # Print out a welcome line (and fancy title)
 say_hello();
@@ -113,9 +149,17 @@ while(1) {
 
     chomp $input;
 
+    # Look for exit words, if found, end the program
     if ($input =~ /($exitWords)/i) {
         print "Eliza: Goodbye\n";
         exit 1;
+    }
+
+    # Remove all adverbs (they usually only make analysis harder)
+    for my $adverb (@adverbs) {
+        if($input =~ s/($adverb) //) {
+            
+        }
     }
 
     my $found = 0;
@@ -147,32 +191,45 @@ while(1) {
 
     for my $aSingleVerbList (@$verbs) {
         for my $verb (@$aSingleVerbList) {
-            if( $found == 0 && $input =~ /.*\bthey (do |don't |did |will |have | always)?(not )? ($verb)\b.*/i) {
+            if( $found == 0 && $input =~ /.*\bthey (do |does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
                 my $option = random_option(  "Why do they @$aSingleVerbList[0]?",
                                              "Are you sure they @$aSingleVerbList[0]?",
                                             "How does it make you feel when they @$aSingleVerbList[0]?");
                 eliza_talk $option;
                 $found = 1;
             }
-            if( $found == 0 && $input =~ /.*\bI ($verb)\b.*/i) {
-                eliza_talk "Why do you @$aSingleVerbList[0]?";
+            if( $found == 0 && $input =~ /.*\bI (do |does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
+                my $option = random_option(  "Why do you @$aSingleVerbList[0]?",
+                                             "Are you sure you @$aSingleVerbList[0]?",
+                                            "How does it make you feel when you @$aSingleVerbList[0]?");
+                eliza_talk $option;
                 $found = 1;
             }
-            if( $found == 0 && $input =~ /.*\bYou ($verb)\b.*/i) {
-                eliza_talk "Why do you think I @$aSingleVerbList[0]?";
+            if( $found == 0 && $input =~ /.*\bYou (do |does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
+                my $option = random_option(  "Are you sure I @$aSingleVerbList[0]?",
+                                            "How does it make you feel when I @$aSingleVerbList[0]?");
+                eliza_talk $option;
                 $found = 1;
             }
-            if( $found == 0 && $input =~ /.*\bWe ($verb)\b.*/i) {
-                eliza_talk "Why do you all @$aSingleVerbList[0]?";
+            if( $found == 0 && $input =~ /.*\bWe (do |does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
+                my $option = random_option(  "Why do you all @$aSingleVerbList[0]?",
+                                             "Are you sure you all @$aSingleVerbList[0]?",
+                                            "How does it make you feel when you all @$aSingleVerbList[0]?");
+                eliza_talk $option;
                 $found = 1;
             }
-        }
-    }
-
-    for my $aSingleVerbList (@$verbs) {
-        for my $verb (@$aSingleVerbList) {
-            if( $found == 0 && $input =~ /.*they ($verb).*/i) {
-                eliza_talk "I found a match for $1";
+            if( $found == 0 && $input =~ /.*\bHe (do | does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
+                my $option = random_option(  "Why does he @$aSingleVerbList[0]?",
+                                             "Are you sure he @$aSingleVerbList[0]s?",
+                                            "How does it make you feel when he @$aSingleVerbList[0]s?");
+                eliza_talk $option;
+                $found = 1;
+            }
+            if( $found == 0 && $input =~ /.*\bShe (do | does |don't |did |will |have | always)?(not )?($verb)\b.*/i) {
+                my $option = random_option(  "Why does she @$aSingleVerbList[0]?",
+                                             "Are you sure she @$aSingleVerbList[0]s?",
+                                            "How does it make you feel when she @$aSingleVerbList[0]s?");
+                eliza_talk $option;
                 $found = 1;
             }
         }
